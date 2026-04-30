@@ -1,6 +1,6 @@
 # ⚡ VerbMeister
 
-A self-contained, single-file web application for vocabulary and verb conjugation practice. Built for German language learners but designed to be **universally usable with any CSV/Excel word list**. No build step, no server, no dependencies — open `verb-trainer.html` in any modern browser and it works.
+A self-contained, single-file web application for vocabulary and verb conjugation practice. Built for German language learners but designed to be **universally usable with any CSV/Excel word list**. No build step, no server, no dependencies — open `index.html` in any modern browser and it works.
 
 ---
 
@@ -46,7 +46,7 @@ A self-contained, single-file web application for vocabulary and verb conjugatio
 
 ## File Structure
 
-The entire application is a **single HTML file** (`verb-trainer.html`). There are no external files, no npm packages, no build system.
+The entire application is a **single HTML file** (`index.html`). There are no external files, no npm packages, no build system.
 
 ```
 verb-trainer.html   ← everything: HTML, CSS, JS, and built-in data
