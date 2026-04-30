@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VerbMeister – Lernplattform</title>
+
+<style>
+  :root {
+    --bg: #0f0e17;
+    --bg2: #1a1828;
+    --bg3: #252337;
+    --card: #1e1c2e;
+    --card2: #2a2840;
+    --accent: #7c6ff7;
+    --accent2: #a78bfa;
+    --accent3: #c4b5fd;
+    --green: #34d399;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --text: #f0eeff;
+    --text2: #b8b0d8;
+    --text3: #7a7095;
+    --border: rgba(124,111,247,0.2);
+    --border2: rgba(124,111,247,0.4);
+    --success-bg: rgba(52,211,153,0.12);
+    --error-bg: rgba(248,113,113,0.12);
+    --radius: 14px;
+    --radius-sm: 8px;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  /* ---- HEADER ---- */
+  header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 62px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .header-score {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .score-pill {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .score-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot-green { background: var(--green); }
+  .dot-red { background: var(--red); }
+  .score-num { font-weight: 700; font-size: 1rem; }
+  /* ---- NAV TABS ---- */
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    padding: 12px 18px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+  .nav-tab:hover { color: var(--text2); }
+  .nav-tab.active { color: var(--accent2); border-bottom-color: var(--accent); }
+  /* ---- MAIN LAYOUT ---- */
+  .main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+  /* ---- SECTION ---- */
+  .section { display: none; }
+  .section.active { display: block; }
+  /* ---- CARDS ---- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+  .card + .card { margin-top: 1rem; }
+  /* ---- PRACTICE SECTION ---- */
+  .practice-layout { display: grid; grid-template-columns: 1fr 300px; gap: 1.5rem; }
+  @media(max-width: 800px) { .practice-layout { grid-template-columns: 1fr; } }
+  .question-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+  }
+  .given-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--accent2);
+    margin-bottom: 0.5rem;
+  }
+  .given-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+  }
+  .given-type {
+    font-size: 0.8rem;
+    color: var(--text3);
+    margin-bottom: 2rem;
+  }
+  .inputs-grid {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .input-group { display: flex; flex-direction: column; gap: 6px; }
+  .input-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text2);
+    letter-spacing: 0.5px;
+  }
+  .verb-input {
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 1rem;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    font-family: inherit;
+    width: 100%;
+  }
+  .verb-input:focus { border-color: var(--accent); background: var(--card2); }
+  .verb-input.correct {
+    border-color: var(--green);
+    background: var(--success-bg);
+    color: var(--green);
+  }
+  .verb-input.wrong {
+    border-color: var(--red);
+    background: var(--error-bg);
+  }
+  .verb-input.given {
+    opacity: 0.5;
+    pointer-events: none;
+    border-style: dashed;
+  }
+  .feedback-text {
+    font-size: 0.78rem;
+    min-height: 16px;
+    margin-top: 3px;
+  }
+  .feedback-text.correct { color: var(--green); }
+  .feedback-text.wrong { color: var(--red); }
+  .btn {
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 11px 22px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-secondary {
+    background: var(--bg3);
+    color: var(--text2);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--border2); color: var(--text); }
+  .btn-danger {
+    background: rgba(248,113,113,0.15);
+    color: var(--red);
+    border: 1px solid rgba(248,113,113,0.3);
+  }
+  .btn-success {
+    background: rgba(52,211,153,0.15);
+    color: var(--green);
+    border: 1px solid rgba(52,211,153,0.3);
+  }
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  /* ---- SIDEBAR ---- */
+  .sidebar-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    position: sticky;
+    top: 80px;
+  }
+  .sidebar-title {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text3);
+    margin-bottom: 1rem;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-label { font-size: 0.85rem; color: var(--text2); }
+  .stat-val { font-size: 1rem; font-weight: 700; }
+  .progress-bar-wrap {
+    background: var(--bg3);
+    border-radius: 999px;
+    height: 6px;
+    overflow: hidden;
+    margin: 12px 0;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.4s ease;
+  }
+  .list-select-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .list-toggle {
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: var(--text2);
+    transition: all 0.2s;
+    font-family: inherit;
+    text-align: left;
+  }
+  .list-toggle.active {
+    border-color: var(--accent);
+    color: var(--accent2);
+    background: rgba(124,111,247,0.1);
+  }
+  .column-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .col-toggle {
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    color: var(--text2);
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .col-toggle.active {
+    border-color: var(--accent);
+    color: var(--accent2);
+    background: rgba(124,111,247,0.1);
+  }
+  .given-col-select {
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    font-size: 0.82rem;
+    color: var(--text2);
+    font-family: inherit;
+    outline: none;
+    width: 100%;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  /* ---- FLASH FEEDBACK ---- */
+  .flash-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .flash-overlay.show { opacity: 1; }
+  .flash-msg {
+    font-size: 5rem;
+    filter: drop-shadow(0 0 40px currentColor);
+  }
+  /* ---- LIST VIEW ---- */
+  .list-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search-input {
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    font-size: 0.88rem;
+    color: var(--text);
+    outline: none;
+    font-family: inherit;
+    flex: 1;
+    min-width: 150px;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  thead tr { background: var(--bg3); }
+  th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text3);
+    white-space: nowrap;
+  }
+  td { padding: 10px 14px; border-top: 1px solid var(--border); }
+  tr:hover td { background: var(--card2); }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .badge-purple { background: rgba(124,111,247,0.15); color: var(--accent2); }
+  .badge-teal { background: rgba(52,211,153,0.12); color: var(--green); }
+  /* ---- UPLOAD ---- */
+  .dropzone {
+    border: 2px dashed var(--border2);
+    border-radius: var(--radius);
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--bg3);
+  }
+  .dropzone:hover, .dropzone.dragover {
+    border-color: var(--accent);
+    background: rgba(124,111,247,0.05);
+  }
+  .dropzone-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .dropzone-text { font-size: 1rem; color: var(--text2); margin-bottom: 0.5rem; }
+  .dropzone-sub { font-size: 0.8rem; color: var(--text3); }
+  /* ---- TEACHER LINK ---- */
+  .link-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: var(--accent2);
+    word-break: break-all;
+    margin: 10px 0;
+  }
+  .symbol-display {
+    font-size: 5rem;
+    text-align: center;
+    padding: 2rem;
+    background: var(--bg3);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    margin: 1rem 0;
+    letter-spacing: 8px;
+  }
+  .session-code-big {
+    font-size: 3.5rem;
+    font-weight: 900;
+    text-align: center;
+    letter-spacing: 8px;
+    color: var(--accent2);
+    padding: 1.5rem;
+    background: rgba(124,111,247,0.08);
+    border-radius: var(--radius);
+    border: 2px solid var(--border2);
+    margin: 1rem 0;
+    font-family: monospace;
+  }
+  /* ---- RESULT MODAL ---- */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-box {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 2.5rem;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    animation: pop 0.3s ease;
+  }
+  @keyframes pop {
+    from { transform: scale(0.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal-emoji { font-size: 4rem; margin-bottom: 1rem; }
+  .modal-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .modal-sub { color: var(--text2); margin-bottom: 1.5rem; }
+  /* ---- ASSIGNMENT BANNER ---- */
+  .assignment-banner {
+    background: linear-gradient(135deg, rgba(124,111,247,0.15), rgba(167,139,250,0.08));
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .banner-icon { font-size: 1.5rem; }
+  .banner-text { flex: 1; }
+  .banner-title { font-weight: 600; margin-bottom: 2px; }
+  .banner-sub { font-size: 0.83rem; color: var(--text2); }
+  /* ---- MISC ---- */
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+  .section-sub {
+    font-size: 0.88rem;
+    color: var(--text2);
+    margin-bottom: 1.5rem;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    color: var(--text2);
+  }
+  select option { background: #1a1828; }
+  .hidden { display: none !important; }
+  .word-count-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .word-count-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 0.82rem;
+  }
+  .word-count-label { color: var(--text3); margin-bottom: 3px; }
+  .word-count-val { font-size: 1.1rem; font-weight: 700; color: var(--accent2); }
+  /* ---- PRINT MODAL ---- */
+  .print-modal-overlay {
+    position: fixed; top:0;left:0;right:0;bottom:0;
+    background: rgba(0,0,0,0.8); z-index:500;
+    display:flex; align-items:center; justify-content:center;
+    backdrop-filter: blur(6px);
+  }
+  .print-modal-box {
+    background: var(--card); border:1px solid var(--border2);
+    border-radius:20px; padding:2rem; max-width:600px; width:94%;
+    max-height:90vh; overflow-y:auto;
+    animation: pop 0.3s ease;
+  }
+  .print-modal-title { font-size:1.2rem;font-weight:700;margin-bottom:1rem; }
+  .print-opt-row {
+    display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem;
+  }
+  .print-preview-table {
+    width:100%; border-collapse:collapse; font-size:.82rem;
+    margin:1rem 0;
+  }
+  .print-preview-table th {
+    background:rgba(124,111,247,.2); color:var(--accent2);
+    padding:7px 10px; text-align:left; font-size:.72rem;
+    text-transform:uppercase; letter-spacing:.6px;
+  }
+  .print-preview-table td {
+    padding:7px 10px; border-top:1px solid var(--border);
+    color:var(--text2);
+  }
+  .print-preview-table tr:nth-child(even) td { background:var(--bg3); }
+  .fill-line {
+    display:inline-block; border-bottom:1px solid var(--text3);
+    min-width:120px; color:transparent;
+  }
+  @media print {
+    body * { visibility:hidden !important; }
+    #printContent, #printContent * { visibility:visible !important; }
+    #printContent {
+      position:fixed; top:0;left:0; width:100%;
+      background:white; color:black; padding:20px;
+    }
+  }
+  .list-mgmt-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .list-mgmt-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .list-mgmt-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+  .list-mgmt-name {
+    font-weight: 600;
+    font-size: .9rem;
+    flex: 1;
+    line-height: 1.3;
+  }
+  .list-mgmt-meta {
+    font-size: .75rem;
+    color: var(--text3);
+  }
+  .list-mgmt-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .btn-icon {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 5px 10px;
+    font-size: .75rem;
+    cursor: pointer;
+    color: var(--text2);
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .btn-icon:hover { border-color: var(--border2); color: var(--text); }
+  .btn-icon.danger:hover { border-color: rgba(248,113,113,.5); color: var(--red); background: var(--error-bg); }
+  /* rename modal */
+  .mini-modal-overlay {
+    position: fixed; top:0;left:0;right:0;bottom:0;
+    background: rgba(0,0,0,.7); z-index:600;
+    display:flex; align-items:center; justify-content:center;
+    backdrop-filter: blur(4px);
+  }
+  .mini-modal-box {
+    background: var(--card); border:1px solid var(--border2);
+    border-radius: var(--radius); padding: 1.5rem;
+    width: 340px; max-width: 92%;
+    animation: pop .25s ease;
+  }
+  .mini-modal-title { font-weight:700; margin-bottom:1rem; }
+  /* seed row */
+  .seed-row {
+    display:flex; align-items:center; gap:8px; margin-bottom:1rem;
+  }
+  .seed-row label { font-size:.78rem; color:var(--text3); white-space:nowrap; }
+  .seed-row input { flex:1; }
+  .seed-row button { white-space:nowrap; }
+  .list-mgmt-builtIn { opacity: .55; cursor: default; }
+  .list-mgmt-builtIn .btn-icon.danger { display:none; }
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    font-size: 0.88rem;
+    color: var(--text);
+    outline: none;
+    font-family: inherit;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+  input[type=number]:focus { border-color: var(--accent); }
+  .history-list { list-style: none; }
+  .history-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .h-verb { font-weight: 600; flex: 1; }
+  .h-badge {
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .h-correct { background: var(--success-bg); color: var(--green); }
+  .h-wrong { background: var(--error-bg); color: var(--red); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    VerbMeister
+  </div>
+  <div class="header-score">
+    <div class="score-pill">
+      <div class="score-dot dot-green"></div>
+      <span id="scoreCorrect" class="score-num">0</span>
+      <span style="color:var(--text3);font-size:.8rem">richtig</span>
+    </div>
+    <div class="score-pill">
+      <div class="score-dot dot-red"></div>
+      <span id="scoreWrong" class="score-num">0</span>
+      <span style="color:var(--text3);font-size:.8rem">falsch</span>
+    </div>
+  </div>
+</header>
+
+<div class="nav-tabs">
+  <button class="nav-tab active" onclick="showSection('practice')">🎯 Üben</button>
+  <button class="nav-tab" onclick="showSection('list')">📋 Wortlisten</button>
+  <button class="nav-tab" onclick="showSection('history')">📊 Verlauf</button>
+  <button class="nav-tab" onclick="showSection('teacher')">👩‍🏫 Lehrkraft</button>
+  <button class="nav-tab" onclick="showSection('upload')">📁 Hochladen</button>
+</div>
+
+<!-- ==================== PRACTICE ==================== -->
+<div class="main">
+<div id="sec-practice" class="section active">
+
+  <div id="assignmentBanner" class="assignment-banner hidden">
+    <div class="banner-icon">📋</div>
+    <div class="banner-text">
+      <div class="banner-title" id="bannerTitle">Hausaufgabe</div>
+      <div class="banner-sub" id="bannerSub"></div>
+    </div>
+    <div class="symbol-display" id="bannerSymbol" style="font-size:2rem;padding:.5rem 1rem;margin:0;"></div>
+  </div>
+
+  <div class="practice-layout">
+    <div>
+      <div class="question-card" id="questionCard">
+        <div class="given-label">Gegeben</div>
+        <div class="given-value" id="givenValue">–</div>
+        <div class="given-type" id="givenType"></div>
+        <div class="inputs-grid" id="inputsGrid"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="checkAnswers()" id="checkBtn">Prüfen ✓</button>
+          <button class="btn btn-secondary" onclick="nextWord()" id="nextBtn" style="display:none">Weiter →</button>
+          <button class="btn btn-secondary" onclick="skipWord()">Überspringen</button>
+          <button class="btn btn-secondary" onclick="showSolution()">Lösung</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="sidebar-card">
+        <div class="sidebar-title">Einstellungen</div>
+        <div style="margin-bottom:10px;font-size:.78rem;color:var(--text3)">Aktive Listen</div>
+        <div class="list-select-grid" id="listToggles"></div>
+        <div style="margin-bottom:6px;font-size:.78rem;color:var(--text3)">Angezeigte Spalten</div>
+        <div class="column-toggles" id="colToggles"></div>
+        <div style="margin-bottom:6px;font-size:.78rem;color:var(--text3)">Vorgegebene Spalte</div>
+        <select class="given-col-select" id="givenColSelect" onchange="nextWord()"></select>
+        <div style="margin-bottom:6px;font-size:.78rem;color:var(--text3)">Wörter pro Session</div>
+        <input type="number" id="sessionSize" value="20" min="1" max="500" style="margin-bottom:12px" oninput="updateSessionInfo()">
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+        <div class="stat-row"><span class="stat-label">Fortschritt</span><span class="stat-val" id="statProgress">0/0</span></div>
+        <div class="stat-row"><span class="stat-label">Genauigkeit</span><span class="stat-val" id="statAccuracy">–</span></div>
+        <div class="stat-row"><span class="stat-label">Serie</span><span class="stat-val" id="statStreak">🔥 0</span></div>
+        <button class="btn btn-secondary" onclick="resetSession()" style="width:100%;margin-top:1rem;font-size:.8rem">Session neu starten</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== LIST ==================== -->
+<div id="sec-list" class="section">
+  <div class="section-title">Wortlisten</div>
+  <div class="section-sub">Alle geladenen Verben und Formen im Überblick</div>
+  <div id="listManagementGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:1.5rem"></div>
+  <div class="list-controls">
+    <input type="text" class="search-input" placeholder="Verb suchen…" id="searchInput" oninput="renderTable()">
+    <select class="given-col-select" id="filterList" onchange="renderTable()" style="width:auto">
+      <option value="">Alle Listen</option>
+    </select>
+    <button class="btn btn-secondary" onclick="exportPDF()">PDF exportieren 📄</button>
+    <button class="btn btn-secondary" onclick="exportAllPDF()">Alle als Übungsblatt 📝</button>
+  </div>
+  <div class="table-wrap">
+    <table id="verbTable">
+      <thead id="tableHead"></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== HISTORY ==================== -->
+<div id="sec-history" class="section">
+  <div class="section-title">Lernverlauf</div>
+  <div class="section-sub">Deine letzten Antworten dieser Session</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1.5rem">
+    <div class="card" style="text-align:center">
+      <div style="font-size:.75rem;color:var(--text3);margin-bottom:4px">RICHTIG</div>
+      <div style="font-size:2rem;font-weight:700;color:var(--green)" id="hCorrect">0</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:.75rem;color:var(--text3);margin-bottom:4px">FALSCH</div>
+      <div style="font-size:2rem;font-weight:700;color:var(--red)" id="hWrong">0</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:.75rem;color:var(--text3);margin-bottom:4px">GENAUIGKEIT</div>
+      <div style="font-size:2rem;font-weight:700;color:var(--accent2)" id="hAccuracy">–</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:.75rem;color:var(--text3);margin-bottom:4px">BESTE SERIE</div>
+      <div style="font-size:2rem;font-weight:700;color:var(--yellow)" id="hStreak">0</div>
+    </div>
+  </div>
+  <div class="card">
+    <ul class="history-list" id="historyList"></ul>
+  </div>
+</div>
+
+<!-- ==================== TEACHER ==================== -->
+<div id="sec-teacher" class="section">
+  <div class="section-title">Lehrkraft-Bereich</div>
+  <div class="section-sub">Aufgaben erstellen und Schüler:innen-Links generieren</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">
+    <div>
+      <div class="card">
+        <div class="sidebar-title" style="margin-bottom:.75rem">Aufgabe konfigurieren</div>
+        <div style="margin-bottom:.75rem">
+          <div style="font-size:.78rem;color:var(--text3);margin-bottom:5px">Liste(n)</div>
+          <div id="teacherListToggles" class="column-toggles"></div>
+        </div>
+        <div style="margin-bottom:.75rem">
+          <div style="font-size:.78rem;color:var(--text3);margin-bottom:5px">Anzahl Wörter</div>
+          <input type="number" id="teacherWordCount" value="10" min="1" max="500">
+        </div>
+        <div style="margin-bottom:.75rem">
+          <div style="font-size:.78rem;color:var(--text3);margin-bottom:5px">Angezeigte Spalten</div>
+          <div id="teacherColToggles" class="column-toggles"></div>
+        </div>
+        <div style="margin-bottom:.75rem">
+          <div style="font-size:.78rem;color:var(--text3);margin-bottom:5px">Vorgegebene Spalte</div>
+          <select class="given-col-select" id="teacherGivenCol"></select>
+        </div>
+        <div style="margin-bottom:.75rem">
+          <div style="font-size:.78rem;color:var(--text3);margin-bottom:5px">Verifikations-Symbol (für Schüler:innen)</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap" id="symbolPicker"></div>
+        </div>
+        <button class="btn btn-primary" onclick="generateTeacherLink()" style="width:100%;margin-top:.5rem">🔗 Link generieren</button>
+      </div>
+    </div>
+    <div>
+      <div class="card" id="teacherLinkCard" style="display:none">
+        <div class="sidebar-title" style="margin-bottom:.5rem">Schüler:innen-Link</div>
+        <div class="link-box" id="teacherLinkBox"></div>
+        <button class="btn btn-secondary" onclick="copyLink()" style="width:100%;margin-bottom:.75rem">📋 Kopieren</button>
+        <div class="sidebar-title" style="margin-bottom:.25rem">Verifikations-Symbol</div>
+        <div class="symbol-display" id="teacherSymbolPreview"></div>
+        <div style="font-size:.8rem;color:var(--text3);text-align:center">Dieses Symbol sehen Schüler:innen beim Öffnen der Aufgabe</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== UPLOAD ==================== -->
+<div id="sec-upload" class="section">
+  <div class="section-title">Eigene Wortliste hochladen</div>
+  <div class="section-sub">CSV- oder Excel-Dateien mit beliebigen Spalten – die App erkennt die Struktur automatisch</div>
+  <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+    <div class="dropzone-icon">📂</div>
+    <div class="dropzone-text">Datei hierher ziehen oder klicken</div>
+    <div class="dropzone-sub">CSV, TSV oder XLSX – max. 5 MB</div>
+  </div>
+  <input type="file" id="fileInput" accept=".csv,.tsv,.xlsx,.xls" style="display:none" onchange="handleFile(this.files[0])">
+  <div id="uploadPreview" class="hidden" style="margin-top:1rem">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem">
+        <div style="font-size:1.5rem">✅</div>
+        <div>
+          <div style="font-weight:600" id="uploadFileName"></div>
+          <div style="font-size:.8rem;color:var(--text3)" id="uploadFileInfo"></div>
+        </div>
+      </div>
+      <div style="font-size:.78rem;color:var(--text3);margin-bottom:.5rem">Vorschau (erste 5 Zeilen):</div>
+      <div class="table-wrap" id="uploadPreviewTable"></div>
+      <div style="margin-top:1rem;display:flex;gap:10px">
+        <input type="text" class="verb-input" id="uploadListName" placeholder="Listenname" style="flex:1">
+        <button class="btn btn-primary" onclick="addUploadedList()">Hinzufügen ✓</button>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:2rem">
+    <div class="sidebar-title" style="margin-bottom:.75rem">Format-Hinweise</div>
+    <div class="card">
+      <div style="font-size:.88rem;color:var(--text2);line-height:1.8">
+        <strong style="color:var(--text)">CSV / TSV:</strong> Erste Zeile = Spaltenköpfe. Alle weiteren Zeilen = Einträge.<br>
+        <strong style="color:var(--text)">XLSX:</strong> Erstes Arbeitsblatt wird verwendet.<br>
+        <strong style="color:var(--text)">Trennzeichen:</strong> Komma, Semikolon oder Tab – wird automatisch erkannt.<br>
+        <strong style="color:var(--text)">Encoding:</strong> UTF-8 empfohlen (Umlaute funktionieren).<br><br>
+        <strong style="color:var(--text)">Beispiel-Spalten:</strong> Infinitiv, Präteritum, Perfekt, du-Form, Übersetzung, Beispielsatz, etc. – beliebige Spalten möglich!
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- Print Modal -->
+<div class="print-modal-overlay hidden" id="printModal">
+  <div class="print-modal-box">
+    <div class="print-modal-title">📄 Übungsblatt erstellen</div>
+    <div style="font-size:.85rem;color:var(--text2);margin-bottom:1rem">Konfiguriere das Übungsblatt und drucke es direkt oder speichere es als PDF über den Browser-Dialog.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem">
+      <div>
+        <div style="font-size:.75rem;color:var(--text3);margin-bottom:5px">Vorgegebene Spalte</div>
+        <select class="given-col-select" id="printGivenCol" onchange="updatePrintPreview()"></select>
+      </div>
+      <div>
+        <div style="font-size:.75rem;color:var(--text3);margin-bottom:5px">Max. Zeilen</div>
+        <input type="number" id="printMaxRows" value="40" min="1" max="200" oninput="updatePrintPreview()">
+      </div>
+    </div>
+    <div class="seed-row">
+      <label>🌱 Seed (für Reproduktion):</label>
+      <input type="text" class="verb-input" id="printSeed" placeholder="zufällig" style="padding:6px 10px;font-size:.82rem" oninput="updatePrintPreview()">
+      <button class="btn-icon" onclick="randomSeed()">🎲 Neu</button>
+    </div>
+    <div style="font-size:.75rem;color:var(--text3);margin-bottom:5px">Listen</div>
+    <div class="print-opt-row" id="printListToggles"></div>
+    <div style="font-size:.75rem;color:var(--text3);margin-bottom:5px">Spalten</div>
+    <div class="print-opt-row" id="printColToggles"></div>
+    <div style="font-size:.78rem;color:var(--text3);margin:.5rem 0">Vorschau (max. 5 Zeilen, Seed: <span id="seedDisplay">–</span>):</div>
+    <div style="overflow-x:auto"><table class="print-preview-table" id="printPreviewTable"></table></div>
+    <div style="display:flex;gap:10px;margin-top:1.25rem;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="doPrint()">🖨️ Drucken / Als PDF speichern</button>
+      <button class="btn btn-secondary" onclick="closePrintModal()">Abbrechen</button>
+    </div>
+  </div>
+</div>
+<div id="printContent" style="display:none"></div>
+
+<!-- Rename Modal -->
+<div class="mini-modal-overlay hidden" id="renameModal">
+  <div class="mini-modal-box">
+    <div class="mini-modal-title">✏️ Liste umbenennen</div>
+    <input type="text" class="verb-input" id="renameInput" placeholder="Neuer Name" style="width:100%;margin-bottom:1rem">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeRenameModal()">Abbrechen</button>
+      <button class="btn btn-primary" onclick="confirmRename()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Flash -->
+<div class="flash-overlay" id="flashOverlay">
+  <div class="flash-msg" id="flashMsg"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay hidden" id="resultModal">
+  <div class="modal-box">
+    <div class="modal-emoji" id="modalEmoji"></div>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-sub" id="modalSub"></div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="closeModal();nextWord()">Weiter →</button>
+      <button class="btn btn-secondary" onclick="closeModal()">Schliessen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA =====================
+const VERBLIST = [
+  {Infinitiv:"befehlen","Präteritum":"ich befahl","Perfekt":"ich habe befohlen","du-Form":"du befiehlst"},
+  {Infinitiv:"beissen","Präteritum":"ich biss","Perfekt":"ich habe gebissen","du-Form":"du beisst"},
+  {Infinitiv:"belügen","Präteritum":"ich belog","Perfekt":"ich habe belogen","du-Form":"du belügst"},
+  {Infinitiv:"biegen","Präteritum":"ich bog","Perfekt":"ich habe gebogen","du-Form":"du biegst"},
+  {Infinitiv:"binden","Präteritum":"ich band","Perfekt":"ich habe gebunden","du-Form":"du bindest"},
+  {Infinitiv:"bitten","Präteritum":"ich bat","Perfekt":"ich habe gebeten","du-Form":"du bittest"},
+  {Infinitiv:"blasen","Präteritum":"ich blies","Perfekt":"ich habe gebasen","du-Form":"du bläst"},
+  {Infinitiv:"bleiben","Präteritum":"ich blieb","Perfekt":"ich bin geblieben","du-Form":"du bleibst"},
+  {Infinitiv:"brechen","Präteritum":"ich brach","Perfekt":"ich habe gebrochen","du-Form":"du brichst"},
+  {Infinitiv:"brennen","Präteritum":"ich brannte","Perfekt":"ich habe gebrannt","du-Form":"du brennst"},
+  {Infinitiv:"bringen","Präteritum":"ich brachte","Perfekt":"ich habe gebracht","du-Form":"du bringst"},
+  {Infinitiv:"denken","Präteritum":"ich dachte","Perfekt":"ich habe gedacht","du-Form":"du denkst"},
+  {Infinitiv:"dürfen","Präteritum":"ich durfte","Perfekt":"ich habe gedurft","du-Form":"du darfst"},
+  {Infinitiv:"essen","Präteritum":"ich ass","Perfekt":"ich habe gegessen","du-Form":"du isst"},
+  {Infinitiv:"fahren","Präteritum":"ich fuhr","Perfekt":"ich bin gefahren","du-Form":"du fährst"},
+  {Infinitiv:"fallen","Präteritum":"ich fiel","Perfekt":"ich bin gefallen","du-Form":"du fällst"},
+  {Infinitiv:"fangen","Präteritum":"ich fing","Perfekt":"ich habe gefangen","du-Form":"du fängst"},
+  {Infinitiv:"finden","Präteritum":"ich fand","Perfekt":"ich habe gefunden","du-Form":"du findest"},
+  {Infinitiv:"fliegen","Präteritum":"ich flog","Perfekt":"ich bin geflogen","du-Form":"du fliegst"},
+  {Infinitiv:"fliehen","Präteritum":"ich floh","Perfekt":"ich bin geflohen","du-Form":"du fliehst"},
+  {Infinitiv:"fliessen","Präteritum":"ich floss","Perfekt":"ich bin geflossen","du-Form":"du fliesst"},
+  {Infinitiv:"fressen","Präteritum":"ich frass","Perfekt":"ich habe gefressen","du-Form":"du frisst"},
+  {Infinitiv:"frieren","Präteritum":"ich fror","Perfekt":"ich habe gefroren","du-Form":"du frierst"},
+  {Infinitiv:"geben","Präteritum":"ich gab","Perfekt":"ich habe gegeben","du-Form":"du gibst"},
+  {Infinitiv:"gehen","Präteritum":"ich ging","Perfekt":"ich bin gegangen","du-Form":"du gehst"},
+  {Infinitiv:"geschehen","Präteritum":"es geschah","Perfekt":"es ist geschehen","du-Form":"es geschieht"},
+  {Infinitiv:"gewinnen","Präteritum":"ich gewann","Perfekt":"ich habe gewonnen","du-Form":"du gewinnst"},
+  {Infinitiv:"giessen","Präteritum":"ich goss","Perfekt":"ich habe gegossen","du-Form":"du giesst"},
+  {Infinitiv:"graben","Präteritum":"ich grub","Perfekt":"ich habe gegraben","du-Form":"du gräbst"},
+  {Infinitiv:"greifen","Präteritum":"ich griff","Perfekt":"ich habe gegriffen","du-Form":"du greifst"},
+  {Infinitiv:"haben","Präteritum":"ich hatte","Perfekt":"ich habe gehabt","du-Form":"du hast"},
+  {Infinitiv:"halten","Präteritum":"ich hielt","Perfekt":"ich habe gehalten","du-Form":"du hältst"},
+  {Infinitiv:"hauen","Präteritum":"ich haute","Perfekt":"ich habe gehauen","du-Form":"du haust"},
+  {Infinitiv:"heissen","Präteritum":"ich hiess","Perfekt":"ich habe geheissen","du-Form":"du heisst"},
+  {Infinitiv:"helfen","Präteritum":"ich half","Perfekt":"ich habe geholfen","du-Form":"du hilfst"},
+  {Infinitiv:"kennen","Präteritum":"ich kannte","Perfekt":"ich habe gekannt","du-Form":"du kennst"},
+  {Infinitiv:"klingen","Präteritum":"ich klang","Perfekt":"ich habe geklungen","du-Form":"du klingst"},
+  {Infinitiv:"kommen","Präteritum":"ich kam","Perfekt":"ich bin gekommen","du-Form":"du kommst"},
+  {Infinitiv:"können","Präteritum":"ich konnte","Perfekt":"ich habe gekonnt","du-Form":"du kannst"},
+  {Infinitiv:"kriechen","Präteritum":"ich kroch","Perfekt":"ich bin gekrochen","du-Form":"du kriechst"},
+  {Infinitiv:"lassen","Präteritum":"ich liess","Perfekt":"ich habe gelassen","du-Form":"du lässt"},
+  {Infinitiv:"laufen","Präteritum":"ich lief","Perfekt":"ich bin gelaufen","du-Form":"du läufst"},
+  {Infinitiv:"lesen","Präteritum":"ich las","Perfekt":"ich habe gelesen","du-Form":"du liest"},
+  {Infinitiv:"liegen","Präteritum":"ich lag","Perfekt":"ich bin/habe gelegen","du-Form":"du liegst"},
+  {Infinitiv:"lügen","Präteritum":"ich log","Perfekt":"ich habe gelogen","du-Form":"du lügst"},
+  {Infinitiv:"messen","Präteritum":"ich mass","Perfekt":"ich habe gemessen","du-Form":"du misst"},
+  {Infinitiv:"mögen","Präteritum":"ich mochte","Perfekt":"ich habe gemocht","du-Form":"du magst"},
+  {Infinitiv:"müssen","Präteritum":"ich musste","Perfekt":"ich habe gemusst","du-Form":"du musst"},
+  {Infinitiv:"nehmen","Präteritum":"ich nahm","Perfekt":"ich habe genommen","du-Form":"du nimmst"},
+  {Infinitiv:"pfeifen","Präteritum":"ich pfiff","Perfekt":"ich habe gepfiffen","du-Form":"du pfeifst"},
+  {Infinitiv:"raten","Präteritum":"ich riet","Perfekt":"ich habe geraten","du-Form":"du rätst"},
+  {Infinitiv:"reissen","Präteritum":"ich riss","Perfekt":"ich habe gerissen","du-Form":"du reisst"},
+  {Infinitiv:"reiten","Präteritum":"ich ritt","Perfekt":"ich bin geritten","du-Form":"du reitest"},
+  {Infinitiv:"rennen","Präteritum":"ich rannte","Perfekt":"ich bin gerannt","du-Form":"du rennst"},
+  {Infinitiv:"riechen","Präteritum":"ich roch","Perfekt":"ich habe gerochen","du-Form":"du riechst"},
+  {Infinitiv:"rufen","Präteritum":"ich rief","Perfekt":"ich habe gerufen","du-Form":"du rufst"},
+  {Infinitiv:"schieben","Präteritum":"ich schob","Perfekt":"ich habe geschoben","du-Form":"du schiebst"},
+  {Infinitiv:"schiessen","Präteritum":"ich schoss","Perfekt":"ich habe geschossen","du-Form":"du schiesst"},
+  {Infinitiv:"schlafen","Präteritum":"ich schlief","Perfekt":"ich habe geschlafen","du-Form":"du schläfst"},
+  {Infinitiv:"schlagen","Präteritum":"ich schlug","Perfekt":"ich habe geschlagen","du-Form":"du schlägst"},
+  {Infinitiv:"schleichen","Präteritum":"ich schlich","Perfekt":"ich bin geschlichen","du-Form":"du schleichst"},
+  {Infinitiv:"schliessen","Präteritum":"ich schloss","Perfekt":"ich habe geschlossen","du-Form":"du schliesst"},
+  {Infinitiv:"schneiden","Präteritum":"ich schnitt","Perfekt":"ich habe geschnitten","du-Form":"du schneidest"},
+  {Infinitiv:"schreiben","Präteritum":"ich schrieb","Perfekt":"ich habe geschrieben","du-Form":"du schreibst"},
+  {Infinitiv:"schreien","Präteritum":"ich schrie","Perfekt":"ich habe geschrien","du-Form":"du schreist"},
+  {Infinitiv:"schweigen","Präteritum":"ich schwieg","Perfekt":"ich habe geschwiegen","du-Form":"du schweigst"},
+  {Infinitiv:"schwimmen","Präteritum":"ich schwamm","Perfekt":"ich bin geschwommen","du-Form":"du schwimmst"},
+  {Infinitiv:"schwören","Präteritum":"ich schwor","Perfekt":"ich habe geschworen","du-Form":"du schwörst"},
+  {Infinitiv:"sehen","Präteritum":"ich sah","Perfekt":"ich habe gesehen","du-Form":"du siehst"},
+  {Infinitiv:"sein","Präteritum":"ich war","Perfekt":"ich bin gewesen","du-Form":"du bist"},
+  {Infinitiv:"singen","Präteritum":"ich sang","Perfekt":"ich habe gesungen","du-Form":"du singst"},
+  {Infinitiv:"sinken","Präteritum":"ich sank","Perfekt":"ich bin gesunken","du-Form":"du sinkst"},
+  {Infinitiv:"sitzen","Präteritum":"ich sass","Perfekt":"ich bin/habe gesessen","du-Form":"du sitzt"},
+  {Infinitiv:"sprechen","Präteritum":"ich sprach","Perfekt":"ich habe gesprochen","du-Form":"du sprichst"},
+  {Infinitiv:"springen","Präteritum":"ich sprang","Perfekt":"ich bin gesprungen","du-Form":"du springst"},
+  {Infinitiv:"stechen","Präteritum":"ich stach","Perfekt":"ich habe gestochen","du-Form":"du stichst"},
+  {Infinitiv:"stehen","Präteritum":"ich stand","Perfekt":"ich bin/habe gestanden","du-Form":"du stehst"},
+  {Infinitiv:"stehlen","Präteritum":"ich stahl","Perfekt":"ich habe gestohlen","du-Form":"du stiehlst"},
+  {Infinitiv:"steigen","Präteritum":"ich stieg","Perfekt":"ich bin gestiegen","du-Form":"du steigst"},
+  {Infinitiv:"sterben","Präteritum":"ich starb","Perfekt":"ich bin gestorben","du-Form":"du stirbst"},
+  {Infinitiv:"stinken","Präteritum":"ich stank","Perfekt":"ich habe gestunken","du-Form":"du stinkst"},
+  {Infinitiv:"stossen","Präteritum":"ich stiess","Perfekt":"ich habe gestossen","du-Form":"du stösst"},
+  {Infinitiv:"streichen","Präteritum":"ich strich","Perfekt":"ich habe gestrichen","du-Form":"du streichst"},
+  {Infinitiv:"streiten","Präteritum":"ich stritt","Perfekt":"ich habe gestritten","du-Form":"du streitest"},
+  {Infinitiv:"tragen","Präteritum":"ich trug","Perfekt":"ich habe getragen","du-Form":"du trägst"},
+  {Infinitiv:"treffen","Präteritum":"ich traf","Perfekt":"ich habe getroffen","du-Form":"du triffst"},
+  {Infinitiv:"trinken","Präteritum":"ich trank","Perfekt":"ich habe getrunken","du-Form":"du trinkst"},
+  {Infinitiv:"tun","Präteritum":"ich tat","Perfekt":"ich habe getan","du-Form":"du tust"},
+  {Infinitiv:"vergessen","Präteritum":"ich vergass","Perfekt":"ich habe vergessen","du-Form":"du vergisst"},
+  {Infinitiv:"verlieren","Präteritum":"ich verlor","Perfekt":"ich habe verloren","du-Form":"du verlierst"},
+  {Infinitiv:"verzeihen","Präteritum":"ich verzieh","Perfekt":"ich habe verziehen","du-Form":"du verzeihst"},
+  {Infinitiv:"wachsen","Präteritum":"ich wuchs","Perfekt":"ich bin gewachsen","du-Form":"du wächst"},
+  {Infinitiv:"waschen","Präteritum":"ich wusch","Perfekt":"ich habe gewaschen","du-Form":"du wäschst"},
+  {Infinitiv:"werden","Präteritum":"ich wurde","Perfekt":"ich bin geworden","du-Form":"du wirst"},
+  {Infinitiv:"werfen","Präteritum":"ich warf","Perfekt":"ich habe geworfen","du-Form":"du wirfst"},
+  {Infinitiv:"wissen","Präteritum":"ich wusste","Perfekt":"ich habe gewusst","du-Form":"du weisst"},
+  {Infinitiv:"ziehen","Präteritum":"ich zog","Perfekt":"ich habe gezogen","du-Form":"du ziehst"}
+];
+const PRAETLIST = [
+  {Infinitiv:"erschrecken (intransitiv)","Präteritum":"ich erschrak","Perfekt":"ich bin erschrocken","du-Form":"du erschrickst","Beispiel":"Sie erschrak vor dem Tiger."},
+  {Infinitiv:"erschrecken (transitiv)","Präteritum":"ich erschreckte","Perfekt":"ich habe erschreckt","du-Form":"du erschrekst","Beispiel":"Sie erschreckte die Katze."},
+  {Infinitiv:"hängen (Zustand)","Präteritum":"ich hing","Perfekt":"ich bin gehangen","du-Form":"du hängst","Beispiel":"Der Mantel hing am Haken."},
+  {Infinitiv:"hängen (Handlung)","Präteritum":"ich hängte","Perfekt":"ich habe gehängt","du-Form":"du hängst","Beispiel":"Er hängte den Mantel auf."},
+  {Infinitiv:"wägen (überlegen)","Präteritum":"ich wog/wägte","Perfekt":"ich habe gewogen","du-Form":"du wägst","Beispiel":"Du wägst die Kartoffeln."},
+  {Infinitiv:"wiegen (Gewicht)","Präteritum":"ich wog","Perfekt":"ich habe gewogen","du-Form":"du wiegst","Beispiel":"Du wiegst genau 45,2 kg."}
+];
+
+// ===================== STATE =====================
+let lists = [
+  { id: 'verbliste', name: 'Verbliste (97)', data: VERBLIST, color: '#7c6ff7' },
+  { id: 'praet', name: 'Zwei Präteritumsformen (6)', data: PRAETLIST, color: '#34d399' }
+];
+let activeLists = ['verbliste', 'praet'];
+let allCols = ['Infinitiv','Präteritum','Perfekt','du-Form'];
+let activeCols = ['Infinitiv','Präteritum','Perfekt','du-Form'];
+let givenCol = '__random__';
+
+let sessionWords = [];
+let sessionIdx = 0;
+let sessionCorrect = 0;
+let sessionWrong = 0;
+let totalCorrect = 0;
+let totalWrong = 0;
+let streak = 0;
+let bestStreak = 0;
+let history = [];
+let checked = false;
+let uploadedData = null;
+let assignmentMode = false;
+let assignmentConfig = null;
+let selectedSymbol = '⭐';
+
+const SYMBOLS = ['⭐','🔥','💎','🚀','🦋','🌈','🏆','⚡','🎯','🌟','🍀','🎸'];
+
+// ===================== INIT =====================
+function init() {
+  checkURLParams();
+  rebuildCols();
+  buildUI();
+  buildSession();
+  nextWord();
+  renderTeacher();
+  renderWordCounts();
+}
+
+function checkURLParams() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('a')) {
+    try {
+      assignmentConfig = safeDecode(params.get('a'));
+      assignmentMode = true;
+      applyAssignment();
+    } catch(e) {}
+  }
+}
+
+function applyAssignment() {
+  if (!assignmentConfig) return;
+  if (assignmentConfig.lists) activeLists = assignmentConfig.lists;
+  if (assignmentConfig.cols) activeCols = assignmentConfig.cols;
+  if (assignmentConfig.givenCol) givenCol = assignmentConfig.givenCol;
+  if (assignmentConfig.count) document.getElementById('sessionSize').value = assignmentConfig.count;
+  const banner = document.getElementById('assignmentBanner');
+  banner.classList.remove('hidden');
+  document.getElementById('bannerTitle').textContent = '📋 Hausaufgabe von der Lehrkraft';
+  document.getElementById('bannerSub').textContent = `${assignmentConfig.count || '?'} Wörter aus: ${activeLists.join(', ')}`;
+  if (assignmentConfig.symbol) {
+    document.getElementById('bannerSymbol').textContent = assignmentConfig.symbol;
+  }
+}
+
+function rebuildCols() {
+  const allData = getAllData();
+  const colSet = new Set();
+  allData.forEach(r => Object.keys(r).forEach(k => colSet.add(k)));
+  allCols = [...colSet];
+  activeCols = activeCols.filter(c => allCols.includes(c));
+  if (!activeCols.length) activeCols = allCols.slice(0, 4);
+  if (!allCols.includes(givenCol)) givenCol = activeCols[0] || allCols[0];
+}
+
+function getAllData() {
+  let out = [];
+  lists.forEach(l => { if (activeLists.includes(l.id)) out = out.concat(l.data); });
+  return out;
+}
+
+function buildSession() {
+  const all = getAllData();
+  const size = Math.min(parseInt(document.getElementById('sessionSize').value)||20, all.length);
+  sessionWords = shuffle([...all]).slice(0, size);
+  sessionIdx = 0;
+  sessionCorrect = 0;
+  sessionWrong = 0;
+}
+
+function buildUI() {
+  // List toggles (practice)
+  const lt = document.getElementById('listToggles');
+  lt.innerHTML = '';
+  lists.forEach(l => {
+    const b = document.createElement('button');
+    b.className = 'list-toggle' + (activeLists.includes(l.id) ? ' active' : '');
+    b.textContent = l.name;
+    b.onclick = () => { toggleList(l.id); b.classList.toggle('active', activeLists.includes(l.id)); rebuildCols(); buildColUI(); buildSession(); nextWord(); };
+    lt.appendChild(b);
+  });
+  buildColUI();
+  buildGivenSelect();
+}
+
+function buildColUI() {
+  const ct = document.getElementById('colToggles');
+  ct.innerHTML = '';
+  allCols.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'col-toggle' + (activeCols.includes(c) ? ' active' : '');
+    b.textContent = c;
+    b.onclick = () => { toggleCol(c); b.classList.toggle('active', activeCols.includes(c)); buildGivenSelect(); nextWord(); };
+    ct.appendChild(b);
+  });
+}
+
+function buildGivenSelect() {
+  const s = document.getElementById('givenColSelect');
+  s.innerHTML = `<option value="__random__" ${givenCol==='__random__'?'selected':''}>🎲 Zufällig</option>` +
+    activeCols.map(c => `<option value="${c}" ${c===givenCol?'selected':''}>${c}</option>`).join('');
+}
+
+function toggleList(id) {
+  if (activeLists.includes(id)) {
+    if (activeLists.length > 1) activeLists = activeLists.filter(x => x !== id);
+  } else {
+    activeLists.push(id);
+  }
+}
+
+function toggleCol(c) {
+  if (activeCols.includes(c)) {
+    if (activeCols.length > 1) activeCols = activeCols.filter(x => x !== c);
+  } else {
+    activeCols.push(c);
+  }
+}
+
+// ===================== PRACTICE =====================
+function nextWord() {
+  const selectedGiven = document.getElementById('givenColSelect').value || givenCol;
+  givenCol = selectedGiven;
+  checked = false;
+  document.getElementById('checkBtn').style.display = '';
+  document.getElementById('nextBtn').style.display = 'none';
+
+  if (sessionIdx >= sessionWords.length) {
+    showSessionEnd();
+    return;
+  }
+
+  const word = sessionWords[sessionIdx];
+  // Resolve random col
+  const wordCols = activeCols.filter(c => word[c] !== undefined && word[c] !== '');
+  let resolvedGiven = givenCol;
+  if (givenCol === '__random__' || !wordCols.includes(givenCol)) {
+    resolvedGiven = wordCols[Math.floor(Math.random() * wordCols.length)] || activeCols[0];
+  }
+  word._resolvedGiven = resolvedGiven;
+
+  document.getElementById('givenValue').textContent = word[resolvedGiven] || '–';
+  document.getElementById('givenType').textContent = resolvedGiven;
+
+  const grid = document.getElementById('inputsGrid');
+  grid.innerHTML = '';
+
+  activeCols.filter(c => c !== resolvedGiven).forEach(col => {
+    if (!Object.prototype.hasOwnProperty.call(word, col) && word[col] === undefined) return;
+    const div = document.createElement('div');
+    div.className = 'input-group';
+    div.innerHTML = `<label class="input-label">${col}</label>
+      <input class="verb-input" id="inp_${col.replace(/[^a-z0-9]/gi,'_')}" placeholder="${col} eingeben…" onkeydown="handleEnter(event)">
+      <div class="feedback-text" id="fb_${col.replace(/[^a-z0-9]/gi,'_')}"></div>`;
+    grid.appendChild(div);
+  });
+
+  updateProgressBar();
+  const first = grid.querySelector('.verb-input');
+  if (first) setTimeout(() => first.focus(), 50);
+}
+
+function handleEnter(e) {
+  if (e.key === 'Enter') {
+    if (!checked) checkAnswers();
+    else nextWord();
+  }
+}
+
+function normalize(s) {
+  return (s||'').toLowerCase().trim().replace(/\s+/g,' ');
+}
+
+function checkAnswers() {
+  if (checked) return;
+  checked = true;
+  const word = sessionWords[sessionIdx];
+  const resolvedGiven = word._resolvedGiven || givenCol;
+  let allCorrect = true;
+
+  activeCols.filter(c => c !== resolvedGiven).forEach(col => {
+    if (!Object.prototype.hasOwnProperty.call(word, col)) return;
+    const key = col.replace(/[^a-z0-9]/gi,'_');
+    const inp = document.getElementById('inp_' + key);
+    const fb = document.getElementById('fb_' + key);
+    if (!inp) return;
+    const correct = word[col] || '';
+    const val = inp.value;
+
+    if (normalize(val) === normalize(correct)) {
+      inp.classList.add('correct');
+      fb.textContent = '✓ Richtig!';
+      fb.className = 'feedback-text correct';
+    } else {
+      inp.classList.add('wrong');
+      inp.value = '';
+      inp.placeholder = correct;
+      fb.textContent = `✗ Richtig: ${correct}`;
+      fb.className = 'feedback-text wrong';
+      allCorrect = false;
+    }
+    inp.readOnly = true;
+  });
+
+  history.unshift({ verb: word[givenCol]||'?', col: givenCol, correct: allCorrect, word });
+  if (history.length > 100) history.pop();
+
+  if (allCorrect) {
+    sessionCorrect++; totalCorrect++;
+    streak++;
+    if (streak > bestStreak) bestStreak = streak;
+    flashEmoji('✅', '#34d399');
+  } else {
+    sessionWrong++; totalWrong++;
+    streak = 0;
+    flashEmoji('❌', '#f87171');
+  }
+
+  updateScores();
+  updateProgressBar();
+  sessionIdx++;
+
+  document.getElementById('checkBtn').style.display = 'none';
+  document.getElementById('nextBtn').style.display = '';
+}
+
+function skipWord() {
+  if (checked) { nextWord(); return; }
+  history.unshift({ verb: (sessionWords[sessionIdx]||{})[givenCol]||'?', col: givenCol, correct: false, skipped: true, word: sessionWords[sessionIdx] });
+  sessionIdx++;
+  sessionWrong++;
+  totalWrong++;
+  streak = 0;
+  updateScores();
+  updateProgressBar();
+  nextWord();
+}
+
+function showSolution() {
+  checked = true;
+  const word = sessionWords[sessionIdx];
+  if (!word) return;
+  const resolvedGiven = word._resolvedGiven || givenCol;
+  activeCols.filter(c => c !== resolvedGiven).forEach(col => {
+    if (!Object.prototype.hasOwnProperty.call(word, col)) return;
+    const key = col.replace(/[^a-z0-9]/gi,'_');
+    const inp = document.getElementById('inp_' + key);
+    if (!inp) return;
+    inp.value = word[col] || '';
+    inp.classList.add('correct');
+    inp.readOnly = true;
+    const fb = document.getElementById('fb_' + key);
+    fb.textContent = 'Lösung angezeigt';
+    fb.className = 'feedback-text correct';
+  });
+  document.getElementById('checkBtn').style.display = 'none';
+  document.getElementById('nextBtn').style.display = '';
+  sessionIdx++;
+  updateProgressBar();
+}
+
+function resetSession() { buildSession(); nextWord(); }
+
+function updateScores() {
+  document.getElementById('scoreCorrect').textContent = totalCorrect;
+  document.getElementById('scoreWrong').textContent = totalWrong;
+  document.getElementById('statStreak').textContent = '🔥 ' + streak;
+  const total = totalCorrect + totalWrong;
+  document.getElementById('statAccuracy').textContent = total ? Math.round(totalCorrect/total*100) + '%' : '–';
+  document.getElementById('hCorrect').textContent = totalCorrect;
+  document.getElementById('hWrong').textContent = totalWrong;
+  document.getElementById('hAccuracy').textContent = total ? Math.round(totalCorrect/total*100) + '%' : '–';
+  document.getElementById('hStreak').textContent = bestStreak;
+  renderHistoryList();
+}
+
+function updateProgressBar() {
+  const size = sessionWords.length;
+  const pct = size ? Math.round(sessionIdx/size*100) : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('statProgress').textContent = Math.min(sessionIdx, size) + '/' + size;
+}
+
+function updateSessionInfo() { }
+
+function flashEmoji(emoji, color) {
+  const o = document.getElementById('flashOverlay');
+  const m = document.getElementById('flashMsg');
+  m.textContent = emoji;
+  m.style.color = color;
+  o.classList.add('show');
+  setTimeout(() => o.classList.remove('show'), 600);
+}
+
+function showSessionEnd() {
+  const total = sessionCorrect + sessionWrong;
+  const pct = total ? Math.round(sessionCorrect/total*100) : 0;
+  let emoji = pct >= 90 ? '🏆' : pct >= 70 ? '🎉' : pct >= 50 ? '💪' : '📚';
+  document.getElementById('modalEmoji').textContent = emoji;
+  document.getElementById('modalTitle').textContent = `Session abgeschlossen!`;
+  document.getElementById('modalSub').textContent = `${sessionCorrect}/${total} richtig (${pct}%) — ${sessionWords.length} Wörter geübt`;
+  document.getElementById('resultModal').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('resultModal').classList.add('hidden');
+  buildSession();
+  nextWord();
+}
+
+// ===================== LIST / TABLE =====================
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'list') { renderWordCounts(); renderTable(); }
+  if (name === 'history') { updateScores(); }
+  if (name === 'teacher') { renderTeacher(); }
+}
+
+function renderWordCounts() {
+  renderListManagement();
+  const fl = document.getElementById('filterList');
+  fl.innerHTML = '<option value="">Alle Listen</option>' + lists.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+}
+
+function renderListManagement() {
+  const grid = document.getElementById('listManagementGrid');
+  if (!grid) return;
+  const BUILT_IN = ['verbliste','praet'];
+  grid.innerHTML = lists.map(l => {
+    const isBuiltIn = BUILT_IN.includes(l.id);
+    const cols = [...new Set(l.data.flatMap(r=>Object.keys(r)))];
+    return `<div class="list-mgmt-card${isBuiltIn?' list-mgmt-builtIn':''}">
+      <div class="list-mgmt-top">
+        <div class="list-mgmt-dot" style="background:${l.color||'var(--accent)'}"></div>
+        <div class="list-mgmt-name" id="lname_${l.id}">${l.name}</div>
+      </div>
+      <div class="list-mgmt-meta">${l.data.length} Einträge · ${cols.length} Spalten${isBuiltIn?' · Standard':''}</div>
+      <div class="list-mgmt-meta" style="color:var(--text3);font-size:.7rem">${cols.join(', ')}</div>
+      <div class="list-mgmt-actions">
+        <button class="btn-icon" onclick="openRenameModal('${l.id}')">✏️ Umbenennen</button>
+        ${!isBuiltIn ? `<button class="btn-icon danger" onclick="deleteList('${l.id}')">🗑️ Löschen</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTable() {
+  const search = (document.getElementById('searchInput').value||'').toLowerCase();
+  const filterList = document.getElementById('filterList').value;
+  let data = [];
+  lists.forEach(l => {
+    if (filterList && l.id !== filterList) return;
+    l.data.forEach(r => data.push({ ...r, _list: l.id, _listName: l.name }));
+  });
+  if (search) data = data.filter(r => Object.values(r).some(v => (v||'').toLowerCase().includes(search)));
+
+  const cols = [...new Set(data.flatMap(r => Object.keys(r).filter(k => !k.startsWith('_'))))];
+  const head = document.getElementById('tableHead');
+  head.innerHTML = `<tr><th>Liste</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr>`;
+
+  const body = document.getElementById('tableBody');
+  body.innerHTML = data.map(r => `<tr>
+    <td><span class="badge badge-purple">${r._listName.split(' ')[0]}</span></td>
+    ${cols.map(c=>`<td>${r[c]||''}</td>`).join('')}
+  </tr>`).join('');
+}
+
+function renderHistoryList() {
+  const ul = document.getElementById('historyList');
+  ul.innerHTML = history.slice(0,50).map(h => `<li class="history-item">
+    <span class="h-verb">${h.verb}</span>
+    <span>${h.col}</span>
+    <span class="h-badge ${h.correct?'h-correct':'h-wrong'}">${h.skipped?'übersprungen':h.correct?'Richtig':'Falsch'}</span>
+  </li>`).join('') || '<li style="padding:1rem;color:var(--text3);text-align:center">Noch keine Einträge</li>';
+}
+
+// ===================== SAFE BASE64 (handles Umlauts) =====================
+function safeEncode(obj) {
+  return btoa(encodeURIComponent(JSON.stringify(obj)));
+}
+function safeDecode(str) {
+  return JSON.parse(decodeURIComponent(atob(str)));
+}
+
+// ===================== PRINT MODAL =====================
+let printActiveLists = [];
+let printActiveCols = [];
+
+function openPrintModal(allWords) {
+  printActiveLists = [...activeLists];
+  printActiveCols = [...activeCols];
+
+  // List toggles
+  const lt = document.getElementById('printListToggles');
+  lt.innerHTML = lists.map(l => `<button class="col-toggle${printActiveLists.includes(l.id)?' active':''}"
+    onclick="togglePrintList('${l.id}',this)">${l.name.split(' ')[0]}</button>`).join('');
+
+  // Col toggles
+  const allColsP = [...new Set(lists.flatMap(l=>l.data.flatMap(r=>Object.keys(r))))];
+  const ct = document.getElementById('printColToggles');
+  ct.innerHTML = allColsP.map(c => `<button class="col-toggle${printActiveCols.includes(c)?' active':''}"
+    onclick="togglePrintCol('${c}',this)">${c}</button>`).join('');
+
+  // Given col select
+  const gc = document.getElementById('printGivenCol');
+  gc.innerHTML = `<option value="__random__">🎲 Zufällig (eine pro Zeile)</option>` +
+    printActiveCols.map(c=>`<option value="${c}">${c}</option>`).join('');
+
+  if (allWords) document.getElementById('printMaxRows').value = 200;
+
+  updatePrintPreview();
+  document.getElementById('printModal').classList.remove('hidden');
+}
+
+function closePrintModal() {
+  document.getElementById('printModal').classList.add('hidden');
+}
+
+function togglePrintList(id, btn) {
+  if (printActiveLists.includes(id)) { if(printActiveLists.length>1) printActiveLists=printActiveLists.filter(x=>x!==id); }
+  else printActiveLists.push(id);
+  btn.classList.toggle('active', printActiveLists.includes(id));
+  updatePrintPreview();
+}
+
+function togglePrintCol(c, btn) {
+  if (printActiveCols.includes(c)) { if(printActiveCols.length>1) printActiveCols=printActiveCols.filter(x=>x!==c); }
+  else printActiveCols.push(c);
+  btn.classList.toggle('active', printActiveCols.includes(c));
+  updatePrintPreview();
+}
+
+function updatePrintPreview() {
+  let data = [];
+  lists.forEach(l => { if(printActiveLists.includes(l.id)) data=data.concat(l.data); });
+  const cols = printActiveCols;
+  const givenC = document.getElementById('printGivenCol').value;
+  const seedStr = document.getElementById('printSeed').value;
+  const seed = parseSeed(seedStr);
+  // Show the resolved seed so it can be reproduced
+  document.getElementById('seedDisplay').textContent = seed;
+  if (!document.getElementById('printSeed').value.trim()) {
+    document.getElementById('printSeed').placeholder = seed;
+  }
+  const rng = seededRNG(seed);
+  const shuffled = seededShuffle(data, rng);
+  const maxRows = parseInt(document.getElementById('printMaxRows').value)||40;
+  const preview = shuffled.slice(0, 5);
+  const t = document.getElementById('printPreviewTable');
+  t.innerHTML = `<thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+    <tbody>${preview.map((r,ri)=>{
+      let resolvedGiven = givenC;
+      if (givenC === '__random__') {
+        const av = cols.filter(c=>r[c]);
+        resolvedGiven = av[Math.floor(rng()*av.length)] || cols[0];
+      }
+      return `<tr>${cols.map(c=>{
+        const isGiven = c === resolvedGiven;
+        return `<td>${isGiven ? (r[c]||'') : '<span class="fill-line">__________</span>'}</td>`;
+      }).join('')}</tr>`;
+    }).join('')}</tbody>`;
+}
+
+function doPrint() {
+  let data = [];
+  lists.forEach(l => { if(printActiveLists.includes(l.id)) data=data.concat(l.data); });
+  const cols = printActiveCols;
+  const givenC = document.getElementById('printGivenCol').value;
+  const maxRows = parseInt(document.getElementById('printMaxRows').value)||40;
+  const seedStr = document.getElementById('printSeed').value;
+  const seed = parseSeed(seedStr);
+  // Update seed field so student/teacher know the exact seed
+  document.getElementById('printSeed').value = seed;
+  document.getElementById('seedDisplay').textContent = seed;
+
+  const rng = seededRNG(seed);
+  // Need two passes: shuffle uses rng, then random-col also uses rng — snapshot separate rng
+  const shuffled = seededShuffle(data, seededRNG(seed)).slice(0, maxRows);
+
+  const listNames = lists.filter(l=>printActiveLists.includes(l.id)).map(l=>l.name).join(', ');
+  const givenLabel = givenC === '__random__' ? 'Zufällig' : givenC;
+  const fillCols = givenC === '__random__' ? cols.slice(1) : cols.filter(c=>c!==givenC);
+
+  // separate rng for random col assignment (same seed, after shuffle)
+  const rng2 = seededRNG(seed + 1);
+
+  const rows = shuffled.map((r,ri) => {
+    let resolvedGiven = givenC;
+    if (givenC === '__random__') {
+      const available = cols.filter(c => r[c]);
+      resolvedGiven = available[Math.floor(rng2()*available.length)] || cols[0];
+    }
+    return `<tr style="background:${ri%2===0?'#fff':'#f7f5ff'}">
+      ${cols.map(c => {
+        const isGiven = c === resolvedGiven;
+        return `<td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;${isGiven?'font-weight:600;color:#4a3f9f;':'color:#888'}">
+          ${isGiven ? (r[c]||'') : `<span style="border-bottom:1px solid #aaa;display:inline-block;min-width:100px;">&nbsp;</span>`}
+        </td>`;
+      }).join('')}
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>VerbMeister – Übungsblatt</title>
+    <style>
+      body{font-family:Arial,sans-serif;margin:20px;color:#222}
+      h1{color:#4a3f9f;font-size:18px;margin-bottom:4px}
+      .meta{font-size:10px;color:#777;margin-bottom:3px}
+      .name-line{font-size:11px;margin-bottom:14px;color:#555;border-bottom:1px solid #eee;padding-bottom:8px}
+      table{width:100%;border-collapse:collapse}
+      th{background:#4a3f9f;color:white;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+      @media print{@page{margin:1.5cm}}
+    </style></head><body>
+    <h1>VerbMeister – Übungsblatt</h1>
+    <div class="meta">Listen: ${listNames} &nbsp;|&nbsp; Vorgegeben: ${givenLabel} &nbsp;|&nbsp; Ergänze: ${fillCols.join(', ')}</div>
+    <div class="meta" style="color:#aaa">Seed: ${seed} &nbsp;·&nbsp; ${shuffled.length} Wörter &nbsp;·&nbsp; Erstellt: ${new Date().toLocaleDateString('de-CH')}</div>
+    <div class="name-line">Name: __________________________________ &nbsp;&nbsp; Datum: ________________ &nbsp;&nbsp; Punkte: _____ / ${shuffled.length}</div>
+    <table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+    <tbody>${rows}</tbody></table>
+    <script>window.onload=()=>{window.print();}<\/script>
+    </body></html>`;
+
+  const w = window.open('', '_blank', 'width=900,height=700');
+  if (w) { w.document.write(html); w.document.close(); }
+  else alert('Popup wurde blockiert. Bitte Popups für diese Seite erlauben.');
+}
+
+function exportPDF() { openPrintModal(false); }
+function exportAllPDF() { openPrintModal(true); }
+
+// ===================== TEACHER =====================
+let teacherActiveLists = ['verbliste','praet'];
+let teacherActiveCols = ['Infinitiv','Präteritum','Perfekt'];
+let teacherGivenCol = 'Infinitiv';
+
+function renderTeacher() {
+  // Symbol picker
+  const sp = document.getElementById('symbolPicker');
+  sp.innerHTML = SYMBOLS.map(s => `<button onclick="selectSymbol('${s}',this)" class="col-toggle${s===selectedSymbol?' active':''}" style="font-size:1.3rem;padding:4px 10px">${s}</button>`).join('');
+
+  // List toggles
+  const lt = document.getElementById('teacherListToggles');
+  lt.innerHTML = lists.map(l => `<button class="col-toggle${teacherActiveLists.includes(l.id)?' active':''}" onclick="toggleTeacherList('${l.id}',this)">${l.name.split(' ')[0]}</button>`).join('');
+
+  // Col toggles
+  const allColsT = [...new Set(lists.flatMap(l=>l.data.flatMap(r=>Object.keys(r))))];
+  const ct = document.getElementById('teacherColToggles');
+  ct.innerHTML = allColsT.map(c => `<button class="col-toggle${teacherActiveCols.includes(c)?' active':''}" onclick="toggleTeacherCol('${c}',this)">${c}</button>`).join('');
+
+  // Given col
+  const gc = document.getElementById('teacherGivenCol');
+  gc.innerHTML = teacherActiveCols.map(c=>`<option value="${c}" ${c===teacherGivenCol?'selected':''}>${c}</option>`).join('');
+}
+
+function selectSymbol(s, btn) {
+  selectedSymbol = s;
+  document.querySelectorAll('#symbolPicker .col-toggle').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function toggleTeacherList(id, btn) {
+  if (teacherActiveLists.includes(id)) { if (teacherActiveLists.length>1) teacherActiveLists=teacherActiveLists.filter(x=>x!==id); }
+  else teacherActiveLists.push(id);
+  btn.classList.toggle('active', teacherActiveLists.includes(id));
+}
+
+function toggleTeacherCol(c, btn) {
+  if (teacherActiveCols.includes(c)) { if (teacherActiveCols.length>1) teacherActiveCols=teacherActiveCols.filter(x=>x!==c); }
+  else teacherActiveCols.push(c);
+  btn.classList.toggle('active', teacherActiveCols.includes(c));
+  const gc = document.getElementById('teacherGivenCol');
+  gc.innerHTML = teacherActiveCols.map(x=>`<option value="${x}">${x}</option>`).join('');
+}
+
+function generateTeacherLink() {
+  const count = document.getElementById('teacherWordCount').value;
+  const givenC = document.getElementById('teacherGivenCol').value;
+  const config = {
+    lists: teacherActiveLists,
+    cols: teacherActiveCols,
+    givenCol: givenC,
+    count: parseInt(count),
+    symbol: selectedSymbol,
+    ts: Date.now()
+  };
+  const encoded = safeEncode(config);
+  const url = window.location.href.split('?')[0] + '?a=' + encoded;
+  document.getElementById('teacherLinkBox').textContent = url;
+  document.getElementById('teacherSymbolPreview').textContent = selectedSymbol;
+  document.getElementById('teacherLinkCard').style.display = '';
+}
+
+function copyLink() {
+  const txt = document.getElementById('teacherLinkBox').textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    flashEmoji('📋', '#7c6ff7');
+  });
+}
+
+// ===================== UPLOAD =====================
+function handleFile(file) {
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (ext === 'csv' || ext === 'tsv') {
+    const reader = new FileReader();
+    reader.onload = e => { parseCSV(e.target.result, file.name); };
+    reader.readAsText(file, 'utf-8');
+  } else if (ext === 'xlsx' || ext === 'xls') {
+    const reader = new FileReader();
+    reader.onload = e => { parseXLSX(e.target.result, file.name); };
+    reader.readAsArrayBuffer(file);
+  }
+}
+
+function parseCSV(text, name) {
+  const lines = text.trim().split(/\r?\n/);
+  if (lines.length < 2) return;
+  const sep = text.indexOf(';') > text.indexOf(',') ? ';' : (text.indexOf('\t') !== -1 ? '\t' : ',');
+  const headers = lines[0].split(sep).map(h=>h.trim().replace(/^"|"$/g,''));
+  const data = lines.slice(1).map(l => {
+    const vals = l.split(sep).map(v=>v.trim().replace(/^"|"$/g,''));
+    const obj = {};
+    headers.forEach((h,i) => { obj[h] = vals[i]||''; });
+    return obj;
+  });
+  uploadedData = { data, name: name.replace(/\.[^.]+$/,''), headers };
+  showUploadPreview(headers, data);
+}
+
+function parseXLSX(buf, name) {
+  // fallback: show error if no SheetJS
+  alert('XLSX-Support: Bitte als CSV speichern und erneut hochladen.');
+}
+
+function showUploadPreview(headers, data) {
+  document.getElementById('uploadFileName').textContent = uploadedData.name;
+  document.getElementById('uploadFileInfo').textContent = `${data.length} Zeilen, ${headers.length} Spalten`;
+  document.getElementById('uploadListName').value = uploadedData.name;
+
+  const preview = data.slice(0,5);
+  const table = `<table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${preview.map(r=>`<tr>${headers.map(h=>`<td>${r[h]||''}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  document.getElementById('uploadPreviewTable').innerHTML = table;
+  document.getElementById('uploadPreview').classList.remove('hidden');
+}
+
+function addUploadedList() {
+  if (!uploadedData) return;
+  const name = document.getElementById('uploadListName').value || uploadedData.name;
+  const id = 'custom_' + Date.now();
+  lists.push({ id, name: `${name} (${uploadedData.data.length})`, data: uploadedData.data, color: '#fbbf24' });
+  activeLists.push(id);
+  rebuildCols();
+  buildUI();
+  buildSession();
+  renderWordCounts();
+  renderTeacher();
+  document.getElementById('uploadPreview').classList.add('hidden');
+  flashEmoji('✅','#34d399');
+  showSection('list');
+}
+
+// Drag & drop
+const dz = document.getElementById('dropzone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+
+// ===================== LIST MANAGEMENT =====================
+let renamingId = null;
+
+function openRenameModal(id) {
+  renamingId = id;
+  const l = lists.find(x=>x.id===id);
+  if (!l) return;
+  // strip "(n)" count suffix for editing
+  const cleanName = l.name.replace(/\s*\(\d+\)$/, '');
+  document.getElementById('renameInput').value = cleanName;
+  document.getElementById('renameModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('renameInput').select(), 50);
+}
+
+function closeRenameModal() {
+  document.getElementById('renameModal').classList.add('hidden');
+  renamingId = null;
+}
+
+function confirmRename() {
+  if (!renamingId) return;
+  const l = lists.find(x=>x.id===renamingId);
+  if (!l) return;
+  const newName = document.getElementById('renameInput').value.trim();
+  if (!newName) return;
+  l.name = `${newName} (${l.data.length})`;
+  closeRenameModal();
+  renderListManagement();
+  renderWordCounts();
+  buildUI();
+  flashEmoji('✏️','#a78bfa');
+}
+
+function deleteList(id) {
+  const l = lists.find(x=>x.id===id);
+  if (!l) return;
+  if (!confirm(`Liste "${l.name}" wirklich löschen? Dies kann nicht rückgängig gemacht werden.`)) return;
+  lists = lists.filter(x=>x.id!==id);
+  activeLists = activeLists.filter(x=>x!==id);
+  if (!activeLists.length && lists.length) activeLists = [lists[0].id];
+  rebuildCols();
+  buildUI();
+  buildSession();
+  renderListManagement();
+  renderWordCounts();
+  renderTeacher();
+  flashEmoji('🗑️','#f87171');
+}
+
+// ===================== SEED UTILS =====================
+// Simple seeded PRNG (mulberry32)
+function seededRNG(seed) {
+  let s = seed >>> 0;
+  if (!s) s = Math.floor(Math.random() * 0xffffffff);
+  return function() {
+    s += 0x6D2B79F5;
+    let t = Math.imul(s ^ s >>> 15, 1 | s);
+    t ^= t + Math.imul(t ^ t >>> 7, 61 | t);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function seededShuffle(arr, rng) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) {
+    const j = Math.floor(rng()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function parseSeed(str) {
+  if (!str || !str.trim()) return Math.floor(Math.random() * 99999);
+  // if numeric use directly, else hash string
+  const n = parseInt(str);
+  if (!isNaN(n)) return n;
+  let h = 0;
+  for (let i=0; i<str.length; i++) { h = Math.imul(31, h) + str.charCodeAt(i) | 0; }
+  return Math.abs(h) % 99999;
+}
+
+function randomSeed() {
+  const s = Math.floor(Math.random() * 99999);
+  document.getElementById('printSeed').value = s;
+  updatePrintPreview();
+}
+
+// ===================== UTILS =====================
+function shuffle(arr) {
+  for (let i = arr.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+init();
+</script>
+</body>
+</html>
