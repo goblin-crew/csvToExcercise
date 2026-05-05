@@ -1135,7 +1135,7 @@
             <div style="margin-bottom:6px;font-size:.78rem;color:var(--text3)">Angezeigte Spalten</div>
             <div class="column-toggles" id="colToggles"></div>
             <div style="margin-bottom:6px;font-size:.78rem;color:var(--text3)">Vorgegebene Spalte</div>
-            <select class="given-col-select" id="givenColSelect" onchange="nextWord()"></select>
+            <select class="given-col-select" id="givenColSelect" onchange="onGivenColChange()"></select>
             <div style="margin-bottom:6px;font-size:.78rem;color:var(--text3)">Wörter pro Session</div>
             <input type="number" id="sessionSize" value="20" min="1" max="500" style="margin-bottom:12px"
               oninput="updateSessionInfo()">
@@ -1150,6 +1150,10 @@
                 0</span></div>
             <button class="btn btn-secondary" onclick="resetSession()"
               style="width:100%;margin-top:1rem;font-size:.8rem">Session neu starten</button>
+            <div style="margin-top:.5rem;text-align:right">
+              <button class="btn-icon" onclick="clearPersistedState()" title="Lokale Daten löschen"
+                style="font-size:.72rem;opacity:.8">Lokale Daten löschen</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1508,18 +1512,123 @@
     let assignmentMode = false;
     let assignmentConfig = null;
     let selectedSymbol = '⭐';
+    const STORAGE_KEY = 'verbmeister.state.v1';
+    let pendingRestoreState = null;
 
     const SYMBOLS = ['⭐', '🔥', '💎', '🚀', '🦋', '🌈', '🏆', '⚡', '🎯', '🌟', '🍀', '🎸'];
 
+    function clampNumber(n, min, max, fallback) {
+      const parsed = parseInt(n, 10);
+      if (Number.isNaN(parsed)) return fallback;
+      return Math.max(min, Math.min(max, parsed));
+    }
+
+    function getPersistedState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function persistState() {
+      try {
+        const activeSection = (document.querySelector('.section.active')?.id || 'sec-practice').replace('sec-', '');
+        const sizeInput = document.getElementById('sessionSize');
+        const payload = {
+          ui: {
+            activeLists,
+            activeCols,
+            givenCol,
+            sessionSize: clampNumber(sizeInput?.value, 1, 500, 20),
+            activeSection
+          },
+          scores: {
+            sessionCorrect,
+            sessionWrong,
+            totalCorrect,
+            totalWrong,
+            streak,
+            bestStreak,
+            history
+          },
+          session: {
+            words: sessionWords,
+            index: Math.min(AppSession.state.index + (checked ? 1 : 0), sessionWords.length)
+          },
+          ts: Date.now()
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch (e) { }
+    }
+
+    function applyPersistedState(state) {
+      if (!state || typeof state !== 'object') return;
+
+      if (state.ui && typeof state.ui === 'object') {
+        if (Array.isArray(state.ui.activeLists)) activeLists = state.ui.activeLists;
+        if (Array.isArray(state.ui.activeCols)) activeCols = state.ui.activeCols;
+        if (typeof state.ui.givenCol === 'string') givenCol = state.ui.givenCol;
+        const input = document.getElementById('sessionSize');
+        if (input) input.value = clampNumber(state.ui.sessionSize, 1, 500, 20);
+      }
+
+      if (state.scores && typeof state.scores === 'object') {
+        sessionCorrect = clampNumber(state.scores.sessionCorrect, 0, 999999, 0);
+        sessionWrong = clampNumber(state.scores.sessionWrong, 0, 999999, 0);
+        totalCorrect = clampNumber(state.scores.totalCorrect, 0, 999999, 0);
+        totalWrong = clampNumber(state.scores.totalWrong, 0, 999999, 0);
+        streak = clampNumber(state.scores.streak, 0, 999999, 0);
+        bestStreak = clampNumber(state.scores.bestStreak, 0, 999999, 0);
+        history = Array.isArray(state.scores.history) ? state.scores.history.slice(0, 100) : [];
+      }
+
+      if (state.session && typeof state.session === 'object') {
+        pendingRestoreState = {
+          words: Array.isArray(state.session.words) ? state.session.words : null,
+          index: clampNumber(state.session.index, 0, 999999, 0)
+        };
+      }
+    }
+
+    function restoreSessionStateIfPossible() {
+      if (!pendingRestoreState || !Array.isArray(pendingRestoreState.words)) return false;
+      if (!pendingRestoreState.words.length) return false;
+      const idx = Math.min(pendingRestoreState.index, pendingRestoreState.words.length);
+      sessionWords = pendingRestoreState.words;
+      AppSession.setWords(sessionWords);
+      AppSession.state.index = idx;
+      sessionIdx = idx;
+      pendingRestoreState = null;
+      return true;
+    }
+
+    function clearPersistedState() {
+      if (!confirm('Lokale Daten (Einstellungen, Session, Scores) wirklich löschen?')) return;
+      try { localStorage.removeItem(STORAGE_KEY); } catch (e) { }
+      window.location.reload();
+    }
+
     // ===================== INIT =====================
     function init() {
+      applyPersistedState(getPersistedState());
       checkURLParams();
       rebuildCols();
       buildUI();
-      buildSession();
+      if (!restoreSessionStateIfPossible()) {
+        buildSession();
+      }
       nextWord(false);
       renderTeacher();
       renderWordCounts();
+      updateScores();
+      const section = getPersistedState()?.ui?.activeSection;
+      if (section && document.getElementById('sec-' + section)) {
+        showSection(section);
+      }
     }
 
     function checkURLParams() {
@@ -1574,6 +1683,7 @@
       sessionCorrect = 0;
       sessionWrong = 0;
       checked = false;
+      persistState();
     }
 
     function buildUI() {
@@ -1584,7 +1694,7 @@
         const b = document.createElement('button');
         b.className = 'list-toggle' + (activeLists.includes(l.id) ? ' active' : '');
         b.textContent = l.name;
-        b.onclick = () => { toggleList(l.id); b.classList.toggle('active', activeLists.includes(l.id)); rebuildCols(); buildColUI(); buildSession(); nextWord(false); };
+        b.onclick = () => { toggleList(l.id); b.classList.toggle('active', activeLists.includes(l.id)); rebuildCols(); buildColUI(); buildGivenSelect(); buildSession(); nextWord(false); };
         lt.appendChild(b);
       });
       buildColUI();
@@ -1607,6 +1717,14 @@
       const s = document.getElementById('givenColSelect');
       s.innerHTML = `<option value="__random__" ${givenCol === '__random__' ? 'selected' : ''}>🎲 Zufällig</option>` +
         activeCols.map(c => `<option value="${c}" ${c === givenCol ? 'selected' : ''}>${c}</option>`).join('');
+    }
+
+    function onGivenColChange() {
+      const s = document.getElementById('givenColSelect');
+      givenCol = s?.value || givenCol;
+      persistState();
+      nextWord(false);
+      buildGivenSelect();
     }
 
     function toggleList(id) {
@@ -1671,6 +1789,7 @@
       updateProgressBar();
       const first = grid.querySelector('.verb-input');
       if (first) setTimeout(() => first.focus(), 50);
+      persistState();
     }
 
     function handleEnter(e) {
@@ -1735,6 +1854,7 @@
 
       document.getElementById('checkBtn').style.display = 'none';
       document.getElementById('nextBtn').style.display = '';
+      persistState();
     }
 
     function skipWord() {
@@ -1751,6 +1871,7 @@
       updateScores();
       updateProgressBar();
       nextWord();
+      persistState();
     }
 
     function showSolution() {
@@ -1772,11 +1893,12 @@
       });
       document.getElementById('checkBtn').style.display = 'none';
       document.getElementById('nextBtn').style.display = '';
+      persistState();
 
       // updateProgressBar();
     }
 
-    function resetSession() { buildSession(); nextWord(false); }
+    function resetSession() { buildSession(); nextWord(false); persistState(); }
 
     function updateScores() {
       document.getElementById('scoreCorrect').textContent = totalCorrect;
@@ -1799,7 +1921,9 @@
       document.getElementById('statProgress').textContent = completed + '/' + size;
     }
 
-    function updateSessionInfo() { }
+    function updateSessionInfo() {
+      persistState();
+    }
 
     function flashEmoji(emoji, color) {
       const o = document.getElementById('flashOverlay');
@@ -1824,6 +1948,7 @@
       document.getElementById('resultModal').classList.add('hidden');
       buildSession();
       nextWord(false);
+      persistState();
     }
 
     // ===================== LIST / TABLE =====================
@@ -1831,10 +1956,23 @@
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
       document.getElementById('sec-' + name).classList.add('active');
-      event.target.classList.add('active');
+      if (event && event.target) event.target.classList.add('active');
+      else {
+        const tabByName = {
+          practice: 0,
+          list: 1,
+          history: 2,
+          teacher: 3,
+          upload: 4
+        };
+        const tabs = document.querySelectorAll('.nav-tab');
+        const idx = tabByName[name];
+        if (tabs[idx]) tabs[idx].classList.add('active');
+      }
       if (name === 'list') { renderWordCounts(); renderTable(); }
       if (name === 'history') { updateScores(); }
       if (name === 'teacher') { renderTeacher(); }
+      persistState();
     }
 
     function renderWordCounts() {
