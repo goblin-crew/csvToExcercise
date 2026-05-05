@@ -1660,7 +1660,7 @@
     function rebuildCols() {
       const allData = getAllData();
       const colSet = new Set();
-      allData.forEach(r => Object.keys(r).forEach(k => colSet.add(k)));
+      allData.forEach(r => Object.keys(r).filter(k => k !== '_resolvedGiven').forEach(k => colSet.add(k)));
       allCols = [...colSet];
       activeCols = activeCols.filter(c => allCols.includes(c));
       if (!activeCols.length) activeCols = allCols.slice(0, 4);
