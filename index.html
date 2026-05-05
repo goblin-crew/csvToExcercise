@@ -678,6 +678,7 @@
   .h-correct { background: var(--success-bg); color: var(--green); }
   .h-wrong { background: var(--error-bg); color: var(--red); }
 </style>
+<script src="generated-lists.js"></script>
 </head>
 <body>
 
@@ -1068,11 +1069,13 @@ const PRAETLIST = [
 ];
 
 // ===================== STATE =====================
-let lists = [
-  { id: 'verbliste', name: 'Verbliste (97)', data: VERBLIST, color: '#7c6ff7' },
-  { id: 'praet', name: 'Zwei Präteritumsformen (6)', data: PRAETLIST, color: '#34d399' }
-];
-let activeLists = ['verbliste', 'praet'];
+let lists = (Array.isArray(window.GENERATED_DEFAULT_LISTS) && window.GENERATED_DEFAULT_LISTS.length)
+  ? window.GENERATED_DEFAULT_LISTS
+  : [
+      { id: 'verbliste', name: 'Verbliste (97)', data: VERBLIST, color: '#7c6ff7' },
+      { id: 'praet', name: 'Zwei Präteritumsformen (6)', data: PRAETLIST, color: '#34d399' }
+    ];
+let activeLists = lists.map(l => l.id);
 let allCols = ['Infinitiv','Präteritum','Perfekt','du-Form'];
 let activeCols = ['Infinitiv','Präteritum','Perfekt','du-Form'];
 let givenCol = '__random__';
@@ -1416,9 +1419,8 @@ function renderWordCounts() {
 function renderListManagement() {
   const grid = document.getElementById('listManagementGrid');
   if (!grid) return;
-  const BUILT_IN = ['verbliste','praet'];
-  grid.innerHTML = lists.map(l => {
-    const isBuiltIn = BUILT_IN.includes(l.id);
+    grid.innerHTML = lists.map(l => {
+    const isBuiltIn = l.builtIn !== false;
     const cols = [...new Set(l.data.flatMap(r=>Object.keys(r)))];
     return `<div class="list-mgmt-card${isBuiltIn?' list-mgmt-builtIn':''}">
       <div class="list-mgmt-top">
