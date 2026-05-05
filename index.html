@@ -1489,7 +1489,7 @@
         { id: 'verbliste', name: 'Verbliste (97)', data: VERBLIST, color: '#7c6ff7' },
         { id: 'praet', name: 'Zwei Präteritumsformen (6)', data: PRAETLIST, color: '#34d399' }
       ];
-    let activeLists = lists.map(l => l.id);
+    let activeLists = lists.filter(l => l.name.match('Verbliste|Präteritumsformen')?.length > 0).map(l => l.id);
     let allCols = ['Infinitiv', 'Präteritum', 'Perfekt', 'du-Form'];
     let activeCols = ['Infinitiv', 'Präteritum', 'Perfekt', 'du-Form'];
     let givenCol = '__random__';
